@@ -11,14 +11,19 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat 'python -m venv venv'
-                bat 'venv\\Scripts\\activate && pip install -r requirements.txt'
+                // Create virtual environment
+                bat '"C:\\Users\\abdul\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m venv venv'
+                
+                // Activate virtual environment and install requirements
+                bat 'call venv\\Scripts\\activate.bat'
+                bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                bat 'venv\\Scripts\\activate && pytest'
+                bat 'call venv\\Scripts\\activate.bat'
+                bat 'pytest'
             }
         }
 
@@ -34,6 +39,15 @@ pipeline {
                 bat 'mkdir C:\\flask_deploy'
                 bat 'xcopy build C:\\flask_deploy /E /I /Y'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
