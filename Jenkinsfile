@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     stages {
-
         stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/hhsmz/flask-jenkins-demo.git'
@@ -11,44 +10,35 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                // Create Python virtual environment
                 bat '"C:\\Users\\abdul\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m venv venv'
-                
-                // Activate venv, upgrade pip, install requirements
                 bat 'call venv\\Scripts\\activate.bat && python -m pip install --upgrade pip && python -m pip install -r requirements.txt'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                // Activate venv and run pytest
                 bat 'call venv\\Scripts\\activate.bat && python -m pytest'
             }
         }
 
         stage('Build Application') {
             steps {
-                // Remove old build folder if it exists
                 bat 'if exist build rmdir /S /Q build'
-
-                // Create new build folder
                 bat 'mkdir build'
 
-                // Copy all files except build, venv, and .git
-                bat 'robocopy . build /E /XD build venv .git'
+                // Use robocopy but ignore its return codes
+                bat 'robocopy . build /E /XD build venv .git || exit 0'
             }
         }
 
         stage('Deploy Application') {
             steps {
-                // Remove old deploy folder if it exists
+                // Remove old deploy folder
                 bat 'if exist C:\\flask_deploy rmdir /S /Q C:\\flask_deploy'
-
-                // Create deploy folder
                 bat 'mkdir C:\\flask_deploy'
 
-                // Copy build contents to deploy folder
-                bat 'robocopy build C:\\flask_deploy /E'
+                // Copy build folder contents to deploy folder, ignore robocopy return code
+                bat 'robocopy build C:\\flask_deploy /E || exit 0'
             }
         }
     }
